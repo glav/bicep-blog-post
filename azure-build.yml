@@ -1,0 +1,71 @@
+trigger:
+ branches:
+   include:
+   - main
+ paths:
+   include:
+   - /infrastructure/aemo_mms/*
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: Validate
+  jobs:
+  - job: Validate
+    steps:
+    - task: CmdLine@2
+      displayName: "Build bicep templates"
+      inputs:
+        script: 'az bicep build -f ./infrastructure/aemo_mms/main.bicep'
+    - publish: $(System.DefaultWorkingDirectory)/infrastructure/aemo_mms
+      artifact: infrastructure
+
+- stage: DeployToStaging
+  condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main'))
+  jobs:
+  - deployment: DeployStaging
+    environment: 'stg'
+    variables: 
+    - group: EMMSEnvironment-STG
+    strategy:
+     runOnce:
+      deploy:
+        steps:
+        - template: deploy-template.yml
+          parameters:
+            serviceConnectionName: stg-5ms-emms-devops-service-connection
+            resourceGroupName: stg_5ms_emms
+
+- stage: DeployToSIT
+  condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main'))
+  jobs:
+  - deployment: DeploySIT
+    environment: 'sit'
+    variables: 
+    - group: EMMSEnvironment-SIT
+    strategy:
+     runOnce:
+      deploy:
+        steps:
+        - template: deploy-template.yml
+          parameters:
+            serviceConnectionName: service_connection_sit_5ms_emms
+            resourceGroupName: sit_5ms_emms
+
+- stage: DeployToProd
+  condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main'))
+  jobs:
+  - deployment: DeployProduction
+    environment: 'prd'
+    variables: 
+    - group: EMMSEnvironment-PRD
+    strategy:
+     runOnce:
+      deploy:
+        steps:
+        - template: deploy-template.yml
+          parameters:
+            serviceConnectionName: service_connection_prd_5ms_emms
+            resourceGroupName: prd_5ms_emms
+

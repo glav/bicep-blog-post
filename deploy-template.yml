@@ -1,0 +1,32 @@
+parameters:
+  - name: serviceConnectionName
+    type: string
+  - name: resourceGroupName
+    type: string
+
+steps:
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: ${{ parameters.serviceConnectionName }}
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      #aadId=$(az ad user show --id '$(AAD_ADMIN_EMAIL)' --query objectId | sed s/\"//g)
+      az deployment group create --resource-group '${{ parameters.resourceGroupName }}'  --name '5msemmsenv' --template-file './main.bicep' --parameters \
+        environment='$(ENVIRONMENT)' \
+        businessOwner='$(BUSINESS_OWNER_EMAIL)' \
+        technicalOwner='$(TECHNICAL_OWNER_EMAIL)' \
+        application='$(APPLICATION)' \
+        businessUnit='$(BUSINESS_UNIT)' \
+        project='$(PROJECT)' \
+        vmAdminUsername='$(VM_ADMIN_USERNAME)' \
+        vmAdminPassword='$(VM_ADMIN_PASSWORD)' \
+        sqlAdminUsername='$(SQL_ADMIN_USERNAME)' \
+        sqlAdminPassword='$(SQL_ADMIN_PASSWORD)' \
+        aadAdminEmail='$(AAD_ADMIN_EMAIL)' \
+        aadAdminId='$(AAD_ADMIN_OBJECTID)' \
+        onPremVnetResourceGroupName=$(ON_PREM_VNET_RESOURCE_GROUP_NAME) \
+        onPremVnetName=$(ON_PREM_VNET_NAME) \
+        onPremVnetCoreSubnetName=$(ON_PREM_VNET_SUBNET_CORE_NAME) \
+        onPremVnetSecureSubnetName=$(ON_PREM_VNET_SUBNET_SECURE_NAME) \
+    workingDirectory: '$(Pipeline.Workspace)/infrastructure'
