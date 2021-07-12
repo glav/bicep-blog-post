@@ -2,7 +2,7 @@
 param vmAdminUsername string
 
 @secure()
-param vmAdminPassword string
+param adminPublicKey string
 param vmName string
 param vmSize string
 
@@ -106,11 +106,16 @@ resource vm 'Microsoft.Compute/virtualMachines@2020-12-01' = {
     osProfile: {
       computerName: vmName
       adminUsername: vmAdminUsername
-      adminPassword: vmAdminPassword
-      windowsConfiguration: {
-        provisionVMAgent: true
-        enableAutomaticUpdates: false
-        timeZone: 'AUS Eastern Standard Time'
+      linuxConfiguration: {
+        disablePasswordAuthentication: true
+        ssh: {
+          publicKeys: [
+            {
+              path: '/home/${vmAdminUsername}/.ssh/authorized_keys'
+              keyData: adminPublicKey          
+            }
+          ]
+        }
       }
     }
     networkProfile: {
@@ -125,9 +130,9 @@ resource vm 'Microsoft.Compute/virtualMachines@2020-12-01' = {
     }
     storageProfile: {
       imageReference: {
-        publisher: 'MicrosoftWindowsServer'
-        offer: 'WindowsServer'
-        sku: '2019-Datacenter'
+        publisher: 'Canonical'
+        offer: 'UbuntuServer'
+        sku: '18.04-LTS'
         version: 'latest'
       }
       osDisk: {
@@ -154,16 +159,16 @@ resource vm 'Microsoft.Compute/virtualMachines@2020-12-01' = {
 }
 
 // Make the data disk usable
-resource vmScriptExtension 'Microsoft.Compute/virtualMachines/extensions@2020-06-01' = {
-  name: '${vm.name}/powershellScriptExtension'
-  location: resourceGroup().location
-  properties: {
-    autoUpgradeMinorVersion: true
-    publisher: 'Microsoft.Compute'
-    type: 'CustomScriptExtension'
-    typeHandlerVersion: '1.9'
-    settings: {
-      commandToExecute: 'powershell -ExecutionPolicy Unrestricted -Command "Get-Disk | Where-Object  PartitionStyle -eq \'RAW\' | Initialize-Disk -PartitionStyle GPT -PassThru | New-Volume -FileSystem NTFS -DriveLetter M -FriendlyName \'DataVolume\'"'
-    }
-  }
-}
+// resource vmScriptExtension 'Microsoft.Compute/virtualMachines/extensions@2020-06-01' = {
+//   name: '${vm.name}/powershellScriptExtension'
+//   location: resourceGroup().location
+//   properties: {
+//     autoUpgradeMinorVersion: true
+//     publisher: 'Microsoft.Compute'
+//     type: 'CustomScriptExtension'
+//     typeHandlerVersion: '1.9'
+//     settings: {
+//       commandToExecute: 'powershell -ExecutionPolicy Unrestricted -Command "Get-Disk | Where-Object  PartitionStyle -eq \'RAW\' | Initialize-Disk -PartitionStyle GPT -PassThru | New-Volume -FileSystem NTFS -DriveLetter M -FriendlyName \'DataVolume\'"'
+//     }
+//   }
+// }

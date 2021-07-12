@@ -1,6 +1,6 @@
 param vmAdminUsername string
 @secure()
-param vmAdminPassword string
+param adminPublicKey string
 param sqlAdminUsername string
 @secure()
 param sqlAdminPassword string
@@ -95,7 +95,7 @@ module vmOneResource 'appserver.bicep' = {
   name: 'vmOneResource'
   params:{
     vmAdminUsername: vmAdminUsername
-    vmAdminPassword: vmAdminPassword
+    adminPublicKey: adminPublicKey
     vmName: vmOne[environment].name
     vmSize: 'Standard_D4s_v3'
   }
@@ -139,7 +139,7 @@ module vmTwoResource 'appserver.bicep' = if (isProd) {
   name: 'vmTwoResource'
   params:{
     vmAdminUsername: vmAdminUsername
-    vmAdminPassword: vmAdminPassword
+    adminPublicKey: adminPublicKey
     vmName: vmTwo[environment].name
     vmSize: 'Standard_D4s_v3'
   }
@@ -188,7 +188,7 @@ module vmThreeResource 'appserver.bicep' = if (isProd) {
   name: 'vmThreeResource'
   params:{
     vmAdminUsername: vmAdminUsername
-    vmAdminPassword: vmAdminPassword
+    adminPublicKey: adminPublicKey
     vmName: vmThree[environment].name
     vmSize: 'Standard_D4s_v3'
   }

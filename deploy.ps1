@@ -17,7 +17,7 @@ param(
 
     [Parameter(Mandatory=$True)]
     [String]
-    $VMAdminPassword,
+    $sshAdminKey,
 
     [Parameter(Mandatory=$True)]
     [String]
@@ -33,7 +33,7 @@ az group create --location $Location --name $ResourceGroupName
 az deployment group create --resource-group $ResourceGroupName  --name 'GlavBicepDemoDeployment' --template-file './main.bicep' --parameters `
     environment="$Environment" `
     vmAdminUsername="$VMAdminUsername" `
-    vmAdminPassword="$VMAdminPassword" `
+    adminPublicKey="$sshAdminKey" `
     sqlAdminUsername="$SqlAdminUsername" `
     sqlAdminPassword="$SqlAdminPassword"
 
