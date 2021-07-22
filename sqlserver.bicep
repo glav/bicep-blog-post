@@ -1,8 +1,8 @@
 
 @allowed([
-  'prod'
-  'test'
   'dev'
+  'test'
+  'prod'
 ])
 param environment string
 param serverName string
@@ -31,7 +31,7 @@ param sqlVcores int
 param sqlMaxDiskSizeBytes int
 param sqlZoneRedundant bool
 
-var isProd = environment == 'prd' ? true : false
+var isProd = environment == 'prod' ? true : false
 var environmentKey = isProd ? 'prod' : 'nonprod'
 var backupPolicies = {
   nonprod: {
@@ -73,7 +73,7 @@ resource sqlServer 'Microsoft.Sql/servers@2019-06-01-preview' = {
 
 resource sqlBackupsShortTerm 'Microsoft.Sql/servers/databases/backupShortTermRetentionPolicies@2021-02-01-preview' = {
   parent: sqlDatabase
-  name: 'Default'
+  name: 'default'
   properties: {
     retentionDays: 30
   }
@@ -81,7 +81,7 @@ resource sqlBackupsShortTerm 'Microsoft.Sql/servers/databases/backupShortTermRet
 
 resource sqlBackupsLongTerm 'Microsoft.Sql/servers/databases/backupLongTermRetentionPolicies@2021-02-01-preview' = {
   parent: sqlDatabase
-  name: 'Default'
+  name: 'default'
   properties: backupPolicies[environmentKey]
 }
 

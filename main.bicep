@@ -1,15 +1,12 @@
-param vmAdminUsername string
-@secure()
-param adminPublicKey string
 param sqlAdminUsername string
 @secure()
 param sqlAdminPassword string
 
 
 @allowed([
-  'prod'
-  'test'
   'dev'
+  'test'
+  'prod'
 ])
 param environment string
 
@@ -23,41 +20,6 @@ var dbSkuZoneProperties = {
   }
   prod: {
     zoneRedundant: true
-  }
-}
-
-// Environment specific VM names
-var vmOne = {
-  dev: {
-    name: 'vmNumberOneDev'
-  }
-  test: {
-    name: 'vmNumberOneTest'
-  }
-  prod: {
-    name: 'vmNumberOneProd'
-  }
-}
-var vmTwo = {
-  dev: {
-    name: 'vmNumberTwoDev'
-  }
-  test: {
-    name: 'vmNumberTwoTest'
-  }
-  prod: {
-    name: 'vmNumberTwoProd'
-  }
-}
-var vmThree = {
-  dev: {
-    name: 'vmNumberThreeDev'
-  }
-  test: {
-    name: 'vmNumberThreeTest'
-  }
-  prod: {
-    name: 'vmNumberThreeProd'
   }
 }
 
@@ -89,17 +51,8 @@ var sqlSetThreeDbNameTwo = 'sql-db-glav-demo-vmthree-two-${environment}'
 
 
 // **********************************************
-// VM and SQL Set One
+// SQL Set One
 // **********************************************
-module vmOneResource 'appserver.bicep' = {
-  name: 'vmOneResource'
-  params:{
-    vmAdminUsername: vmAdminUsername
-    adminPublicKey: adminPublicKey
-    vmName: vmOne[environment].name
-    vmSize: 'Standard_D4s_v3'
-  }
-}
 
 module sqlSetOneDbOneResource 'sqlserver.bicep' = {
   name: 'sqlSetOneDbOneResource'
@@ -109,8 +62,8 @@ module sqlSetOneDbOneResource 'sqlserver.bicep' = {
     environment: environment
     adminPassword: sqlAdminPassword
     adminUsername: sqlAdminUsername
-    sqlVcores: 12
-    sqlMaxDiskSizeBytes: 3221225472000  // 3 TB
+    sqlVcores: 2
+    sqlMaxDiskSizeBytes: 536870912000  // 512 GB
     sqlZoneRedundant: dbSkuZoneProperties[environment].zoneRedundant
   }
 }
@@ -123,8 +76,8 @@ module sqlSetOneDbTwoResource 'sqlserver.bicep' = {
     environment: environment
     adminPassword: sqlAdminPassword
     adminUsername: sqlAdminUsername
-    sqlVcores: 4
-    sqlMaxDiskSizeBytes: 1073741824000  // 1 Tb
+    sqlVcores: 2
+    sqlMaxDiskSizeBytes: 536870912000  // 512 GB
     sqlZoneRedundant: dbSkuZoneProperties[environment].zoneRedundant
   }
   dependsOn: [
@@ -133,17 +86,8 @@ module sqlSetOneDbTwoResource 'sqlserver.bicep' = {
 }
 
 // **********************************************
-// VM and SQL Set Two - Only for Prod
+// SQL Set Two - Only for Prod
 // **********************************************
-module vmTwoResource 'appserver.bicep' = if (isProd) {
-  name: 'vmTwoResource'
-  params:{
-    vmAdminUsername: vmAdminUsername
-    adminPublicKey: adminPublicKey
-    vmName: vmTwo[environment].name
-    vmSize: 'Standard_D4s_v3'
-  }
-}
 module sqlSetTwoDbOneResource 'sqlserver.bicep' = if (isProd) {
   name: 'sqlSetTwoDbOneResource'
   params: {
@@ -152,8 +96,8 @@ module sqlSetTwoDbOneResource 'sqlserver.bicep' = if (isProd) {
     environment: environment
     adminPassword: sqlAdminPassword
     adminUsername: sqlAdminUsername
-    sqlVcores: 12
-    sqlMaxDiskSizeBytes: 1073741824000  // 1 TB
+    sqlVcores: 2
+    sqlMaxDiskSizeBytes: 536870912000  // 512 GB
     sqlZoneRedundant: dbSkuZoneProperties[environment].zoneRedundant
   }
   dependsOn: [
@@ -170,8 +114,8 @@ module sqlSetTwoDbTwoResource 'sqlserver.bicep' = if (isProd) {
     environment: environment
     adminPassword: sqlAdminPassword
     adminUsername: sqlAdminUsername
-    sqlVcores: 4
-    sqlMaxDiskSizeBytes: 1073741824000  // 1 TB
+    sqlVcores: 2
+    sqlMaxDiskSizeBytes: 536870912000  // 512 GB
     sqlZoneRedundant: dbSkuZoneProperties[environment].zoneRedundant
   }
   dependsOn: [
@@ -182,17 +126,8 @@ module sqlSetTwoDbTwoResource 'sqlserver.bicep' = if (isProd) {
 }
 
 // **********************************************
-// VM and SQL Set Three - Only for Prod
+// SQL Set Three - Only for Prod
 // **********************************************
-module vmThreeResource 'appserver.bicep' = if (isProd) {
-  name: 'vmThreeResource'
-  params:{
-    vmAdminUsername: vmAdminUsername
-    adminPublicKey: adminPublicKey
-    vmName: vmThree[environment].name
-    vmSize: 'Standard_D4s_v3'
-  }
-}
 module sqlSetThreeDbOneResource 'sqlserver.bicep' = if (isProd) {
   name: 'sqlSetThreeDbOneResource'
   params: {
@@ -202,12 +137,12 @@ module sqlSetThreeDbOneResource 'sqlserver.bicep' = if (isProd) {
     adminPassword: sqlAdminPassword
     adminUsername: sqlAdminUsername
     sqlVcores: 2
-    sqlMaxDiskSizeBytes: 1073741824000  // 1 TB
+    sqlMaxDiskSizeBytes: 536870912000  // 512 GB
     sqlZoneRedundant: dbSkuZoneProperties[environment].zoneRedundant
   }
   dependsOn: [
     sqlSetTwoDbOneResource
-    sqlSetTwoDbOneResource
+    sqlSetTwoDbTwoResource
   ]
 }
 
@@ -219,13 +154,13 @@ module sqlSetThreeDbTwoResource 'sqlserver.bicep' = if (isProd) {
     environment: environment
     adminPassword: sqlAdminPassword
     adminUsername: sqlAdminUsername
-    sqlVcores: 4 
-    sqlMaxDiskSizeBytes: 1073741824000  // 1 TB
+    sqlVcores: 2
+    sqlMaxDiskSizeBytes: 536870912000  // 512 GB
     sqlZoneRedundant: dbSkuZoneProperties[environment].zoneRedundant
   }
   dependsOn: [
     sqlSetTwoDbOneResource
-    sqlSetTwoDbOneResource
+    sqlSetTwoDbTwoResource
     sqlSetThreeDbOneResource
   ]
 }

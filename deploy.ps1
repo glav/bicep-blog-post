@@ -28,8 +28,8 @@ param(
     $SqlAdminPassword
 
 )
-
-az group create --location $Location --name $ResourceGroupName
+$tomorrow=((Get-Date).AddDays(1)).ToString('yyyy-MM-dd')
+az group create --location $Location --name $ResourceGroupName --tags expiresOn=$tomorrow
 az deployment group create --resource-group $ResourceGroupName  --name 'GlavBicepDemoDeployment' --template-file './main.bicep' --parameters `
     environment="$Environment" `
     vmAdminUsername="$VMAdminUsername" `
